@@ -15,11 +15,17 @@ def main():
         default=RESULTS_DIR / "ocr_results.csv",
         help="Path for the completed OCR results CSV.",
     )
+    parser.add_argument(
+        "--worker-timeout",
+        type=float,
+        default=60.0,
+        help="Socket timeout for worker communication in seconds (default: 60).",
+    )
     args = parser.parse_args()
 
     try:
         image_dir, port = read_master_config(args.config)
-        master = OCR_Master(image_dir, port, args.output)
+        master = OCR_Master(image_dir, port, args.output, worker_timeout=args.worker_timeout)
         master.run()
     except (EOFError, OSError, ValueError) as error:
         parser.error(str(error))
