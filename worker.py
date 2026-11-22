@@ -7,7 +7,7 @@ from util.read_config import read_worker_config
 
 
 def main():
-    parser = ArgumentParser(description="Request one PNG from the OCR master.")
+    parser = ArgumentParser(description="Request PNGs from the OCR master.")
     parser.add_argument("--config", type=Path, default=PROJECT_DIR / "worker_config.txt")
     args = parser.parse_args()
 

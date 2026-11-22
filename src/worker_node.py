@@ -16,21 +16,24 @@ class Worker_Node:
 
     def run(self):
         if self.n_workers != 1:
-            raise ValueError("The single-image run requires n_workers=1")
+            raise ValueError("The batch run requires n_workers=1")
 
         with socket.create_connection((self.master_host, self.master_port)) as connection:
             with connection.makefile("rwb") as stream:
-                send_message(stream, {"type": "request"})
-                task = receive_message(stream, "task")
-                image_bytes = base64.b64decode(task["image"], validate=True)
-                with Image.open(BytesIO(image_bytes)) as image:
-                    text, time_ms = recognize_image(image)
+                while True:
+                    send_message(stream, {"type": "request"})
+                    task = receive_message(stream, "task", "no_tasks")
+                    if task["type"] == "no_tasks":
+                        break
 
-                send_message(stream, {
-                    "type": "result",
-                    "id": task["id"],
-                    "text": text,
-                    "time_ms": round(time_ms, 4),
-                })
+                    image_bytes = base64.b64decode(task["image"], validate=True)
+                    with Image.open(BytesIO(image_bytes)) as image:
+                        text, time_ms = recognize_image(image)
 
-        print(f"Processed {task['filename']}")
+                    send_message(stream, {
+                        "type": "result",
+                        "id": task["id"],
+                        "text": text,
+                        "time_ms": round(time_ms, 4),
+                    })
+                    print(f"Processed {task['filename']}")
