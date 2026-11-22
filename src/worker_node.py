@@ -16,8 +16,8 @@ def _process_tasks(connection):
     with connection, connection.makefile("rwb") as stream:
         while True:
             send_message(stream, {"type": "request"})
-            task = receive_message(stream, "task", "no_tasks")
-            if task["type"] == "no_tasks":
+            task = receive_message(stream, "task", "shutdown")
+            if task["type"] == "shutdown":
                 return
 
             image_bytes = base64.b64decode(task["image"], validate=True)
