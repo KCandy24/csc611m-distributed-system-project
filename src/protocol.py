@@ -7,12 +7,13 @@ def send_message(stream, message):
     stream.flush()
 
 
-def receive_message(stream, expected_type):
+def receive_message(stream, *expected_types):
+    expected = " or ".join(expected_types)
     line = stream.readline()
     if not line:
-        raise EOFError(f"Connection closed while waiting for {expected_type}")
+        raise EOFError(f"Connection closed while waiting for {expected}")
 
     message = json.loads(line)
-    if not isinstance(message, dict) or message.get("type") != expected_type:
-        raise ValueError(f"Expected a {expected_type} message")
+    if not isinstance(message, dict) or message.get("type") not in expected_types:
+        raise ValueError(f"Expected a {expected} message")
     return message
